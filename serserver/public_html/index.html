@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Solardata @ de Schans</title>
+	
+	<script type="text/javascript" src="jquery-1.8.0.min.js"></script>
+	<script type="text/javascript">
+		
+		var host = 'http://hiemstra-electronics.com/';
+		
+		function showPNG(dat)
+		{
+			$.ajax({
+				type: "GET",
+				url: host + "cgi-bin/solarclient?plot-" + dat,
+				dataType: "xml",
+				success: function(xml) { $("div#png").html('<img src="'+ $(xml).find("plot").text() + '?' + Math.random()*9999 + '" /><img src="'+$(xml).find("plot").text() + 'V.png?' + Math.random()*9999 +'" />'); }
+			});
+		}
+		
+		function livedata()
+		{
+			$.ajax({
+   				type: "GET",
+   				url: host + "cgi-bin/solarclient?info",
+   				dataType : "xml",
+   				success : function (xml) 
+   				{
+   					$("span#subtitle").html($(xml).find("banner").text());
+   					$("span#subsubtitle").html('Sun info today: <b>'+$(xml).find("suninfo").text()+'</b> Status now: <b>'+$(xml).find("getstatus").text()+'</b>');
+   					$("div#livedata").html('<div class="row">Time: '+$(xml).find("systime").text()+'</div><div class="row">Realtime sample: '+$(xml).find("sample").text()+'</div>');
+   					//alert(xml);
+   				}
+   			});
+		}
+	
+		$(document).ready(function()
+		{
+   			$.ajax({
+   				type: "GET",
+   				url : host + "cgi-bin/solarclient?dir",
+   				dataType : "xml",
+   				success : function(xml)
+   				{
+   					$(xml).find("datfile").each(function() 
+					{ $("ul#site_list").append('<li onclick="javascript:showPNG(\'' + $(this).text() + '\');">' + '<a>' + $(this).text() + '</a>' + '</li>'); });
+   				}
+   			});
+   			
+   			livedata();
+   			setInterval(livedata, 1000); 
+		});
+		
+	</script>
+	<style type="text/css">
+		
+		html, body { height: 100%; width: 100%; margin: 0px auto; font-family: "Trebuchet MS", "Arial";  }
+		h1 { margin-bottom: 10px; }
+		hr { height: 1px; border: 0 none; background: #333; margin: 15px 0px;}
+		ul { list-style: none; font-size: 11px;  }
+		li { padding: 2px 0px; border : 1px solid black; width: 200px; text-align: center; margin: 2px 0px; }
+		li:hover { background: #EEE; cursor: pointer; }
+		 
+		div#list { float: left; width: 29%; } 
+		div#png { float: left; width: 49%; } 
+		div#header { margin: 20px 20px 0px 20px; }
+		span#subtitle { font-size: 10px; }
+		span#subsubtitle { font-size: 10px; }
+		div#livedata { position: absolute; left: 400px; top: 30px; width: 650px; }
+		div.row { float: left; font-size: 11px; margin-right: 20px; padding: 5px 8px; border: 1px solid black; }
+		
+	</style>
+</head>
+	<body>
+		
+		<div id="header">
+			<h1>Solardata @ de Schans</h1>
+			<span id="subtitle"></span><br>
+			<span id="subsubtitle"></span>
+			<div id="livedata"></div>
+			<hr />
+		</div>
+		<div id="list">
+			
+			<ul id="site_list"></ul>
+			
+		</div>
+		<div id="png"></div>
+	
+	</body>
+</html>
